@@ -1,7 +1,4 @@
 #!/bin/bash
-export ORACLE_BASE=/opt/oracle
-export ORACLE_HOME=/opt/oracle/product/12.1.0.2/dbhome_1
-export PATH=$PATH:$ORACLE_HOME/bin
 
 echo "SPFILE='/mnt/database/dbs/spfile${ORACLE_SID}.ora'" > /opt/oracle/product/12.1.0.2/dbhome_1/dbs/init${ORACLE_SID}.ora
 
@@ -64,14 +61,24 @@ function rundb {
 }
 
 function sqlplusremote {
-  sqlplus ${ORACLE_USER}/${ORACLE_PASSWORD}@${REMOTEDB_PORT_1521_TCP_ADDR}:${REMOTEDB_PORT_1521_TCP_PORT}/${ORACLE_SID}
+  SQLPLUS_CMD="sqlplus ${ORACLE_USER}/${ORACLE_PASSWORD}@${REMOTEDB_PORT_1521_TCP_ADDR}:${REMOTEDB_PORT_1521_TCP_PORT}/${ORACLE_SID}"
+  if [ $AS_SYSDBA ]; then
+    SQLPLUS_CMD="${SQLPLUS_CMD} as sysdba"
+  fi
+
+  ${SQLPLUS_CMD}
 }
 
 function runsqlremote {
+  SQLPLUS_CMD="sqlplus -S ${ORACLE_USER}/${ORACLE_PASSWORD}@${REMOTEDB_PORT_1521_TCP_ADDR}:${REMOTEDB_PORT_1521_TCP_PORT}/${ORACLE_SID}"
+  if [ $AS_SYSDBA ]; then
+    SQLPLUS_CMD="${SQLPLUS_CMD} as sysdba"
+  fi
+
   find /mnt/sql -maxdepth 1 -type f -name *.sql | sort | while read script; do
     echo
     echo "*** Running script $script in database ${ORACLE_USER}@${REMOTEDB_PORT_1521_TCP_ADDR}:${REMOTEDB_PORT_1521_TCP_PORT}/${ORACLE_SID}"
-    echo exit | sqlplus -S ${ORACLE_USER}/${ORACLE_PASSWORD}@${REMOTEDB_PORT_1521_TCP_ADDR}:${REMOTEDB_PORT_1521_TCP_PORT}/${ORACLE_SID} @$(printf %q "$script");
+    echo exit | ${SQLPLUS_CMD} @$(printf %q "$script");
   done
 }
 

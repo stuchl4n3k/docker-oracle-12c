@@ -1,5 +1,12 @@
 FROM centos
-MAINTAINER Ralph Hopman <rhopman@bol.com>
+
+MAINTAINER Petr Stuchlik <petr.stuchlik@embedit.cz>
+# FORKED FROM docker-oracle-12c by Ralph Hopman <rhopman@bol.com>
+
+# Environment
+ENV ORACLE_BASE /opt/oracle
+ENV ORACLE_HOME /opt/oracle/product/12.1.0.2/dbhome_1
+ENV PATH 	    $PATH:$ORACLE_HOME/bin
 
 # Groups
 RUN groupadd oracle
