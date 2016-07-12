@@ -25,94 +25,135 @@ You also need to set some kernel parameters and security limits. Check
 [this guide](http://gemsofprogramming.wordpress.com/2013/09/19/installing-oracle-12c-on-ubuntu-12-04-64-bit-a-hard-journey-but-its-worth-it/)
 and follow the parts about editing `sysctl.conf` and `limits.conf`.
 
-## Step 2: Increase shared memory (shm)
+**A note about shared memory:**
 
 Oracle requires a shared memory (shm) of at least 256 MB during installation.
 In the current version of Docker, this defaults to 64 MB. Docker
-now supports `--shm-size` parameter, so be sure to _build_ and _run_ with this param:
+now supports `--shm-size` parameter to configure the shm size. That's why 
+the supplied `build.sh` and `run.sh` scripts both automatically append 
+`--shm-size=256m` to all docker commands.
 
-`--shm-size=256m`
+## Step 2: Download
 
-## Step 3: Download
+Either [download this repository](https://git.homecredit.net/stuchlik/docker-oracle-12c/repository/archive.zip?ref=master) or use git clone:
 
-Download or clone this repository, if you haven't done so already. Then
-download Oracle 12c (12.1.0.2.0)
-[from OTN](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html).
-Extract the two zip files in the `resources` directory, so the installer will
-be at `resources/database/runInstaller`.
+`$ git clone git@git.homecredit.net:stuchlik/docker-oracle-12c.git && cd docker-oracle-12c`
 
-## Step 4: Build the image
+Then download Oracle 12c (12.1.0.2.0) [from OTN](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html) 
+and **extract the two zip files** in the `resources` directory, so the installer will be at `resources/database/runInstaller`.
+
+## Step 3: Build the image
+
+Customize the configuration in `bin/config.sh` according to your needs.
 
 Run
 
 ```
-$ docker build --shm-size=256m -t oracle12c .
+$ bin/build.sh
 ```
 
-to build the image and tag it as `oracle12c`.
-It may take a while. Make sure you see the text `Successfully Setup Software.`
-somewhere in the output.
+to build the image and tag it as `oracle12c`. The script will also install 
+Oracle 12c software and initialize an empty database.
 
-The resulting image can do two things: create an empty database and run an
-existing database. The idea is that you create a database first, make a snapshot
-and run it in multiple containers.
+It may take a while, so please be patient. Make sure you see the text 
+`Successfully Setup Software.` somewhere in the output.
 
-## Step 5: Create the database
+## Step 4: Run the database server
 
-Make a directory where you can store the database, e.g.
+Run
 
 ```
-$ mkdir /tmp/database
+$ bin/run.sh
 ```
 
-Start the container, passing the Oracle SID that you want to use. In this example,
-I'll use `FOO` as the SID:
-
-```
-$ docker run --shm-size=256m -e COMMAND=initdb -e ORACLE_SID=FOO -v /tmp/db-FOO:/mnt/database oracle12c
-```
-
-## Step 6: Run the database server
-
-Start the container again, using the same SID and pointing to (a snapshot of) the
-same volume:
-
-```
-$ docker run --shm-size=256m -e COMMAND=rundb -e ORACLE_SID=FOO -v /tmp/db-FOO:/mnt/database -P --name db1 oracle12c
-```
-
-This will start the server and show the alert log. If you want to run it in the
-background, add a -d switch:
-
-```
-$ docker run --shm-size=256m -d -e COMMAND=rundb -e ORACLE_SID=FOO -v /tmp/db-FOO:/mnt/database -P --name db1 oracle12c
-```
-
-When the container is running, port 1521 is exposed. You can user `docker ps` to
-see the running Docker processes and find out which port is used on the host.
+The script will start the container as a daemon. If you can connect
+to your database using `system/password@localhost:${DB_PORT}/${DB_SID}`,
+you are finished.
 
 ## More
+
+To start and stop container db-FOO:
+
+```
+$ docker start db-FOO
+```
+
+```
+$ docker stop db-FOO
+```
+
+To start interactive shell in the running container db-FOO:
+
+```
+$ docker exec -it db-FOO /bin/bash
+```
+
+To run the container db-FOO manually (without using the provided `run.sh` script):
+
+```
+docker run --shm-size=256m -d \
+    -e COMMAND=rundb -e ORACLE_SID=FOO \
+    -v /tmp/db-FOO:/mnt/database \
+    -p 1521:1521 \
+    --name db-FOO \
+    oracle12c
+```
 
 To start sqlplus as sys in the database, and shut it down afterwards:
 
 ```
-docker run --shm-size=256m -i -t -e COMMAND=sqlpluslocal -e ORACLE_SID=FOO -v /tmp/db-FOO:/mnt/database oracle12c
+$ docker run --shm-size=256m -it \
+    -e COMMAND=sqlpluslocal -e ORACLE_SID=FOO \
+    -v /tmp/db-FOO:/mnt/database \
+    oracle12c
 ```
 
 To run all `*.sql` scripts in `/tmp/sql` in the database, and shut it down afterwards:
 
 ```
-docker run --shm-size=256m -e COMMAND=runsqllocal -e ORACLE_SID=FOO -v /tmp/db-FOO:/mnt/database -v /tmp/sql:/mnt/sql oracle12c
+$ docker run --shm-size=256m \
+    -e COMMAND=runsqllocal -e ORACLE_SID=FOO \
+    -v /tmp/db-FOO:/mnt/database -v /tmp/sql:/mnt/sql \
+    oracle12c
 ```
 
-To connect to the database FOO running in container db1 with sqlplus:
+To connect to the database FOO running in container db-FOO with sqlplus 
+(using a different docker instance):
 
 ```
-docker run --shm-size=256m -i -t -e COMMAND=sqlplusremote -e ORACLE_SID=FOO -e ORACLE_USER=system -e ORACLE_PASSWORD=password --link db1:remotedb -P oracle12c
+$ docker run --shm-size=256m -it \
+    -e COMMAND=sqlplusremote -e ORACLE_SID=FOO \
+    -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
+    --link db-FOO:remotedb -P \
+    oracle12c
 ```
 
-To run all `*.sql` scripts in `/tmp/sql` in the database FOO running in container db1:
+To execute an SQL command in database FOO running in container db-FOO with
+sqlplus (using a different docker instance):
 
 ```
-docker run --shm-size=256m -e COMMAND=runsqlremote -e ORACLE_SID=FOO -e ORACLE_USER=system -e ORACLE_PASSWORD=password --link db1:remotedb -v /tmp/sql:/mnt/sql oracle12c
+echo "SELECT COUNT(*) FROM EMPLOYEES;" | docker run --shm-size=256m -i \
+                -e COMMAND=sqlplusremote -e ORACLE_SID=FOO \
+                -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
+                --link db-FOO:remotedb -P oracle12c
 ```
+
+To run all `*.sql` scripts in `/tmp/sql` in the database FOO running 
+in container db-FOO (using a different docker instance):
+
+```
+$ docker run --shm-size=256m \
+    -e COMMAND=runsqlremote -e ORACLE_SID=FOO \
+    -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
+    --link db-FOO:remotedb \
+    -v /tmp/sql:/mnt/sql \
+    oracle12c
+```
+
+You can add `-e AS_SYSDBA=true` in previous commands to connect to db-FOO
+with sysdba role.
+
+## Remarks
+
+This docker container is a fork of **[docker-oracle-12c](https://github.com/rhopman/docker-oracle-12c/tree/e7436f378f32b8f47960e50f98b2c6158d0f230d)** by Ralph Hopman <rhopman@bol.com>. 
+You can find his repo on Github.
