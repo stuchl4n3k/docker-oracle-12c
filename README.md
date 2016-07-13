@@ -112,7 +112,7 @@ builtin sqlplus (using a different docker instance):
 
 ```bash
 echo "SELECT COUNT(*) FROM EMPLOYEES;" | docker run --shm-size=256m -i \
-                -e COMMAND=sqlplusremote -e ORACLE_SID=FOO \
+                -e COMMAND=runsqlplus -e ORACLE_SID=FOO \
                 -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
                 --link db-FOO:remotedb -P oracle12c
 ```
