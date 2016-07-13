@@ -13,14 +13,4 @@ if [ ! -f "${ROOT_DIR}/resources/database/runInstaller" ]; then
 fi
 
 # Build Oracle 12c Docker image
-docker build --shm-size=256m \
-    -t oracle12c ${ROOT_DIR}
-
-# Init Oracle DB
-mkdir -p ${DATASTORE_PATH}/tablespaces
-chmod -R 777 ${DATASTORE_PATH}
-
-docker run --shm-size=256m \
-    -e COMMAND=initdb -e ORACLE_SID=${DB_SID} \
-    -v ${DATASTORE_PATH}:/mnt/database \
-    oracle12c
+docker build --shm-size=256m -t oracle12c ${ROOT_DIR}

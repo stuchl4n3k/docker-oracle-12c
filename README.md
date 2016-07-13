@@ -58,7 +58,18 @@ Oracle 12c software and initialize an empty database.
 It may take a while, so please be patient. Make sure you see the text 
 `Successfully Setup Software.` somewhere in the output.
 
-## Step 4: Run the database server
+## Step 4: Initialize the database
+
+Run
+
+```
+$ bin/init.sh
+```
+
+The script will prepare a datastore for your tablespace files and create
+a new database `${DB_SID}`.
+
+## Step 5: Run the database server
 
 Run
 
