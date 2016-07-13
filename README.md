@@ -57,22 +57,26 @@ in the output.
 
 ## B. Running the database
 
-Run
+To run a container use:
 
 ```bash
-docker run --shm-size=256m -d \
+docker run --shm-size=256m -it \
     -e COMMAND=rundb -e ORACLE_SID=FOO \
     -p 1521:1521 \
     --name db-FOO stuchl4n3k/o12c
 ```
 
-This will run a docker container as a daemon and name it `db-FOO`.
-It will also prepare a datastore for your tablespace files and create
-a new database `FOO` on exposed port 1521 (if no such DB already exists
-in `/mnt/database`).
+This will run a docker container and name it `db-FOO`.
 
-You should be now able to connect to your database using 
+If no database exists in `/mnt/database`, then first time initialization 
+will take place: datastore for your tablespace files will be prepared
+and a new database `FOO` will be created and exposed on port `1521`.
+
+The database creation takes a while, so please be patient.
+
+After the listener has been started you should be able to connect to the database using 
 `system/password@localhost:1521/FOO`.
+
 
 ## More
 
