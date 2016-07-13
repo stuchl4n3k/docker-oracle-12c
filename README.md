@@ -47,10 +47,10 @@ and **extract the two zip files** in the `resources` directory, so the installer
 Run
 
 ```bash
-docker build --shm-size=256m -t o12c .
+docker build --shm-size=256m -t stuchl4n3k/o12c .
 ```
 
-to build the image and tag it as `o12c`. The build will install 
+to build the image and tag it as `stuchl4n3k/o12c`. The build will install 
 Oracle 12c software, which may take a while, so please be patient. 
 Make sure you see the text `Successfully Setup Software.` somewhere 
 in the output.
@@ -63,7 +63,7 @@ Run
 docker run --shm-size=256m -d \
     -e COMMAND=rundb -e ORACLE_SID=FOO \
     -p 1521:1521 \
-    --name db-FOO o12c
+    --name db-FOO stuchl4n3k/o12c
 ```
 
 This will run a docker container as a daemon and name it `db-FOO`.
@@ -100,7 +100,7 @@ docker run -it \
     -e COMMAND=runsqlplus -e ORACLE_SID=FOO \
     -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
     --link db-FOO:remotedb -P \
-    o12c
+    stuchl4n3k/o12c
 ```
 
 To execute an SQL command in database `FOO` running in container `db-FOO` with
@@ -121,7 +121,7 @@ docker run --shm-size=256m \
     -e COMMAND=runsql -e ORACLE_SID=FOO \
     -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
     --link db-FOO:remotedb \
-    oracle12c
+    stuchl4n3k/o12c
 ```
 
 You can add `-e AS_SYSDBA=true` in previous commands to connect to db-FOO
@@ -137,7 +137,7 @@ docker run --shm-size=256m -d \
     -v ~/oradb/db-FOO:/mnt/database \
     -e COMMAND=rundb -e ORACLE_SID=FOO \
     -p 1521:1521 \
-    --name db-FOO o12c
+    --name db-FOO stuchl4n3k/o12c
 ```
 
 
