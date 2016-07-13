@@ -114,7 +114,7 @@ builtin sqlplus (using a different docker instance):
 echo "SELECT COUNT(*) FROM EMPLOYEES;" | docker run --shm-size=256m -i \
                 -e COMMAND=runsqlplus -e ORACLE_SID=FOO \
                 -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
-                --link db-FOO:remotedb -P oracle12c
+                --link db-FOO:remotedb -P stuchl4n3k/o12c
 ```
 
 To run all `*.sql` scripts in `/tmp/sql` in the database `FOO` running 
