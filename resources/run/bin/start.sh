@@ -89,7 +89,7 @@ case "$COMMAND" in
     runsql
     ;;
   *)
-    echo "Environment variable COMMAND must be {initdb|sqlpluslocal|runsqllocal|rundb|runsqlplus|runsqlremote}, e.g.:"
+    echo "Environment variable COMMAND must be {initdb|rundb|runsqlplus|runsql}, e.g.:"
     echo "  To initialize a database FOO in /tmp/db-FOO:"
     echo "  docker run -e COMMAND=initdb -e ORACLE_SID=FOO -v /tmp/db-FOO:/mnt/database oracle12c"
     echo ""
@@ -100,7 +100,7 @@ case "$COMMAND" in
     echo "  docker run -i -t -e COMMAND=runsqlplus -e ORACLE_SID=FOO -e ORACLE_USER=system -e ORACLE_PASSWORD=password --link db1:remotedb -P oracle12c"
     echo ""
     echo "  To run all *.sql scripts in /tmp/sql in the database FOO running in container db1:"
-    echo "  docker run -e COMMAND=runsqlremote -e ORACLE_SID=FOO -e ORACLE_USER=system -e ORACLE_PASSWORD=password --link db1:remotedb -v /tmp/sql:/mnt/sql oracle12c"
+    echo "  docker run -e COMMAND=runsql -e ORACLE_SID=FOO -e ORACLE_USER=system -e ORACLE_PASSWORD=password --link db1:remotedb -v /tmp/sql:/mnt/sql oracle12c"
     exit 1
     ;;
 esac
