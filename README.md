@@ -93,7 +93,7 @@ ORACLE_SID=db-FOO
 ORACLE_USER=system
 ORACLE_PASSWORD=password
 
-# Optional variable that can be used to run sqlplus or batch of sql scripts are `sysdba` role if set to true.
+# Optional variable that can be used to run sqlplus or batch of sql scripts as `sysdba` role if set to true.
 AS_SYSDBA=true
 ```
 
