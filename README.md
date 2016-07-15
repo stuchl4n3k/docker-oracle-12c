@@ -82,7 +82,7 @@ After the listener has been started you should be able to connect to the databas
 The entrypoint script (`/home/oracle/bin/start.sh`) is controlled by environment variables listed below.
 
 ```
-# Mandatory variable that controls what do in entrypoint script after you `docker run`.
+# Mandatory variable that controls what to do in entrypoint script after you `docker run`.
 # Must be one of {initdb|rundb|runsqlplus|runsql}
 COMMAND=rundb
 
