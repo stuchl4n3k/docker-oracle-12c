@@ -47,10 +47,10 @@ and **extract the two zip files** in the `resources` directory, so the installer
 Run
 
 ```bash
-docker build --shm-size=256m -t stuchl4n3k/o12c .
+docker build --shm-size=256m -t embedit/oracle .
 ```
 
-to build the image and tag it as `stuchl4n3k/o12c`. The build will install 
+to build the image and tag it as `embedit/oracle`. The build will install 
 Oracle 12c software, which may take a while, so please be patient. 
 Make sure you see the text `Successfully Setup Software.` somewhere 
 in the output.
@@ -63,7 +63,7 @@ To run a container use:
 docker run --shm-size=256m -it \
     -e COMMAND=rundb -e ORACLE_SID=FOO \
     -p 1521:1521 \
-    --name db-FOO stuchl4n3k/o12c
+    --name db-FOO embedit/oracle
 ```
 
 This will run a docker container and name it `db-FOO`.
@@ -77,6 +77,25 @@ The database creation takes a while, so please be patient.
 After the listener has been started you should be able to connect to the database using 
 `system/password@localhost:1521/FOO`.
 
+## Control variables
+
+The entrypoint script (`/home/oracle/bin/start.sh`) is controlled by environment variables listed below.
+
+```
+# Mandatory variable that controls what do in entrypoint script after you `docker run`.
+# Must be one of {initdb|rundb|runsqlplus|runsql}
+COMMAND=rundb
+
+# Mandatory variable that controls which SID is initialized and run.
+ORACLE_SID=db-FOO
+
+# DB login credentials, needed only when running sqlplus or a batch of sql scripts.
+ORACLE_USER=system
+ORACLE_PASSWORD=password
+
+# Optional variable that can be used to run sqlplus or batch of sql scripts are `sysdba` role if set to true.
+AS_SYSDBA=true
+```
 
 ## More
 
@@ -104,7 +123,7 @@ docker run -it \
     -e COMMAND=runsqlplus -e ORACLE_SID=FOO \
     -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
     --link db-FOO:remotedb -P \
-    stuchl4n3k/o12c
+    embedit/oracle
 ```
 
 To execute an SQL command in database `FOO` running in container `db-FOO` with
@@ -114,7 +133,7 @@ builtin sqlplus (using a different docker instance):
 echo "SELECT COUNT(*) FROM EMPLOYEES;" | docker run --shm-size=256m -i \
                 -e COMMAND=runsqlplus -e ORACLE_SID=FOO \
                 -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
-                --link db-FOO:remotedb -P stuchl4n3k/o12c
+                --link db-FOO:remotedb -P embedit/oracle
 ```
 
 To run all `*.sql` scripts in `/tmp/sql` in the database `FOO` running 
@@ -124,8 +143,9 @@ in container `db-FOO` with builtin sqlplus (using a different docker instance):
 docker run --shm-size=256m \
     -e COMMAND=runsql -e ORACLE_SID=FOO \
     -e ORACLE_USER=system -e ORACLE_PASSWORD=password \
+    -v /tmp/sql:/mnt/sql
     --link db-FOO:remotedb \
-    stuchl4n3k/o12c
+    embedit/oracle
 ```
 
 You can add `-e AS_SYSDBA=true` in previous commands to connect to db-FOO
@@ -141,9 +161,8 @@ docker run --shm-size=256m -d \
     -v ~/oradb/db-FOO:/mnt/database \
     -e COMMAND=rundb -e ORACLE_SID=FOO \
     -p 1521:1521 \
-    --name db-FOO stuchl4n3k/o12c
+    --name db-FOO embedit/oracle
 ```
-
 
 ## Remarks
 
